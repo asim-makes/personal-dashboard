@@ -18,9 +18,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-			  	
+
       - name: Instal dependencies
         run: npm install
-			  
+
       - name: Run the build
         run: npm run build
