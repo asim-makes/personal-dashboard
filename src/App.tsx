@@ -19,7 +19,63 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const Dashboard = () => {
+// Type definitions
+type WeatherData = {
+  location: string;
+  temperature: number;
+  condition: string;
+  humidity: number;
+  windSpeed: number;
+  uvIndex: number;
+};
+
+type GithubActivity = {
+  id: number;
+  type: string;
+  repo: string;
+  message: string;
+  timestamp: string;
+  commits?: number;
+};
+
+type Expense = {
+  id: number;
+  description: string;
+  amount: number;
+  category: string;
+  date: string;
+};
+
+type NewsArticle = {
+  id: number;
+  title: string;
+  summary: string;
+  source: string;
+  publishedAt: string;
+  url?: string;
+};
+
+type LoadingState = {
+  weather: boolean;
+  github: boolean;
+  expenses: boolean;
+  news: boolean;
+};
+
+type ErrorState = {
+  weather?: string | null;
+  github?: string | null;
+  expenses?: string | null;
+  news?: string | null;
+};
+
+type NewExpense = {
+  description: string;
+  amount: string;
+  category: string;
+};
+
+const App: React.FC = () => {
   // API Configuration - Update these with your API Gateway endpoints
   const API_CONFIG = {
     baseUrl: "https://your-api-gateway-url.amazonaws.com", // Replace with your actual API Gateway URL
@@ -32,33 +88,33 @@ const Dashboard = () => {
   };
 
   // State management
-  const [weatherData, setWeatherData] = useState(null);
-  const [githubActivity, setGithubActivity] = useState([]);
-  const [expenses, setExpenses] = useState([]);
-  const [newsData, setNewsData] = useState([]);
-  const [loading, setLoading] = useState({
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [githubActivity, setGithubActivity] = useState<GithubActivity[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [newsData, setNewsData] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState<LoadingState>({
     weather: false,
     github: false,
     expenses: false,
     news: false,
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<ErrorState>({});
 
   // New expense form state
-  const [newExpense, setNewExpense] = useState({
+  const [newExpense, setNewExpense] = useState<NewExpense>({
     description: "",
     amount: "",
     category: "other",
   });
 
   // Generic API call function
-  const apiCall = async (endpoint, options = {}) => {
+  const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     try {
       const response = await fetch(`${API_CONFIG.baseUrl}${endpoint}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
-          ...options.headers,
+          ...(options.headers as object),
         },
         ...options,
       });
@@ -80,9 +136,8 @@ const Dashboard = () => {
     setErrors((prev) => ({ ...prev, weather: null }));
 
     try {
-      // Example API call - replace with your lambda endpoint
       const data = await apiCall(API_CONFIG.endpoints.weather);
-      setWeatherData(data);
+      setWeatherData(data as WeatherData);
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
@@ -109,7 +164,7 @@ const Dashboard = () => {
 
     try {
       const data = await apiCall(API_CONFIG.endpoints.github);
-      setGithubActivity(data.activities || []);
+      setGithubActivity((data.activities || []) as GithubActivity[]);
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
@@ -152,7 +207,7 @@ const Dashboard = () => {
 
     try {
       const data = await apiCall(API_CONFIG.endpoints.expenses);
-      setExpenses(data.expenses || []);
+      setExpenses((data.expenses || []) as Expense[]);
     } catch (error) {
       setErrors((prev) => ({ ...prev, expenses: "Failed to fetch expenses" }));
       // Mock data for development
@@ -188,7 +243,7 @@ const Dashboard = () => {
     if (!newExpense.description || !newExpense.amount) return;
 
     try {
-      const expense = {
+      const expense: Omit<Expense, "id"> = {
         ...newExpense,
         amount: parseFloat(newExpense.amount),
         date: new Date().toISOString().split("T")[0],
@@ -199,11 +254,11 @@ const Dashboard = () => {
         body: JSON.stringify(expense),
       });
 
-      setExpenses((prev) => [data, ...prev]);
+      setExpenses((prev) => [data as Expense, ...prev]);
       setNewExpense({ description: "", amount: "", category: "other" });
     } catch (error) {
       // For development, add locally
-      const expense = {
+      const expense: Expense = {
         id: Date.now(),
         ...newExpense,
         amount: parseFloat(newExpense.amount),
@@ -214,7 +269,7 @@ const Dashboard = () => {
     }
   };
 
-  const deleteExpense = async (id) => {
+  const deleteExpense = async (id: number) => {
     try {
       await apiCall(`${API_CONFIG.endpoints.expenses}/${id}`, {
         method: "DELETE",
@@ -233,7 +288,7 @@ const Dashboard = () => {
 
     try {
       const data = await apiCall(API_CONFIG.endpoints.news);
-      setNewsData(data.articles || []);
+      setNewsData((data.articles || []) as NewsArticle[]);
     } catch (error) {
       setErrors((prev) => ({ ...prev, news: "Failed to fetch news" }));
       // Mock data for development
@@ -268,26 +323,28 @@ const Dashboard = () => {
     fetchGithubActivity();
     fetchExpenses();
     fetchNews();
+    // eslint-disable-next-line
   }, []);
 
   // Helper functions
-  const formatCurrency = (amount) =>
+  const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
     }).format(amount);
-  const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
-  const formatRelativeTime = (dateString) => {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString();
+  const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
     return `${Math.floor(diffInHours / 24)}d ago`;
   };
 
-  const getWeatherIcon = (condition) => {
+  const getWeatherIcon = (condition?: string) => {
     if (condition?.toLowerCase().includes("rain"))
       return <CloudRain className="w-8 h-8" />;
     if (condition?.toLowerCase().includes("cloud"))
@@ -295,7 +352,7 @@ const Dashboard = () => {
     return <Sun className="w-8 h-8" />;
   };
 
-  const getActivityIcon = (type) => {
+  const getActivityIcon = (type: string) => {
     switch (type) {
       case "push":
         return <GitBranch className="w-4 h-4" />;
@@ -308,8 +365,8 @@ const Dashboard = () => {
     }
   };
 
-  const getCategoryColor = (category) => {
-    const colors = {
+  const getCategoryColor = (category: string) => {
+    const colors: { [key: string]: string } = {
       food: "bg-green-100 text-green-800",
       transport: "bg-blue-100 text-blue-800",
       entertainment: "bg-purple-100 text-purple-800",
@@ -319,6 +376,7 @@ const Dashboard = () => {
     return colors[category] || colors.other;
   };
 
+  // --- JSX (UI) ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
@@ -667,4 +725,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default App;
