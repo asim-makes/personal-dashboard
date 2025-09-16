@@ -137,7 +137,12 @@ const App: React.FC = () => {
     setErrors((prev) => ({ ...prev, weather: null }));
 
     try {
-      const data = await apiCall(API_CONFIG.endpoints.weather);
+      const location = "Kathmandu";
+
+      const data = await apiCall(API_CONFIG.endpoints.weather, {
+        method: "POST",
+        body: JSON.stringify({ location: location }),
+      });
       setWeatherData(data as WeatherData);
     } catch (error) {
       setErrors((prev) => ({
