@@ -440,27 +440,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-gray-300">{weatherData.condition}</p>
-//                 <div className="grid grid-cols-3 gap-4 mt-4">
-//                   <div className="text-center">
-//                     <Wind className="w-4 h-4 mx-auto text-gray-400" />
-//                     <p className="text-xs text-gray-400 mt-1">Wind</p>
-//                     <p className="text-sm text-white">
-//                       {weatherData.windSpeed} mph
-//                     </p>
-//                   </div>
-//                   <div className="text-center">
-//                     <Eye className="w-4 h-4 mx-auto text-gray-400" />
-//                     <p className="text-xs text-gray-400 mt-1">Humidity</p>
-//                     <p className="text-sm text-white">
-//                       {weatherData.humidity}%
-//                     </p>
-//                   </div>
-//                   <div className="text-center">
-//                     <Sun className="w-4 h-4 mx-auto text-gray-400" />
-//                     <p className="text-xs text-gray-400 mt-1">UV Index</p>
-//                     <p className="text-sm text-white">{weatherData.uvIndex}</p>
-//                   </div>
-//                 </div>
               </div>
             ) : (
               <div className="animate-pulse space-y-4">
