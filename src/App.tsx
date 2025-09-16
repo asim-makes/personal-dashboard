@@ -96,6 +96,7 @@ const App: React.FC = () => {
       endpoint: "/news",
     },
   };
+  };
 
   // State management
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
@@ -203,7 +204,11 @@ const App: React.FC = () => {
     setErrors((prev) => ({ ...prev, expenses: null }));
 
     try {
-      const data = await apiCall(API_CONFIG.endpoints.expenses);
+      // FIX: Pass both baseUrl and endpoint
+      const data = await apiCall(
+        API_CONFIG.expenses.baseUrl,
+        API_CONFIG.expenses.endpoint
+      );
       setExpenses((data.expenses || []) as Expense[]);
     } catch (error) {
       setErrors((prev) => ({ ...prev, expenses: "Failed to fetch expenses" }));
@@ -246,10 +251,15 @@ const App: React.FC = () => {
         date: new Date().toISOString().split("T")[0],
       };
 
-      const data = await apiCall(API_CONFIG.endpoints.expenses, {
-        method: "POST",
-        body: JSON.stringify(expense),
-      });
+      // FIX: Pass both baseUrl and endpoint
+      const data = await apiCall(
+        API_CONFIG.expenses.baseUrl,
+        API_CONFIG.expenses.endpoint,
+        {
+          method: "POST",
+          body: JSON.stringify(expense),
+        }
+      );
 
       setExpenses((prev) => [data as Expense, ...prev]);
       setNewExpense({ description: "", amount: "", category: "other" });
@@ -268,9 +278,14 @@ const App: React.FC = () => {
 
   const deleteExpense = async (id: number) => {
     try {
-      await apiCall(`${API_CONFIG.endpoints.expenses}/${id}`, {
-        method: "DELETE",
-      });
+      // FIX: Pass both baseUrl and endpoint. The endpoint now includes the ID.
+      await apiCall(
+        API_CONFIG.expenses.baseUrl,
+        `${API_CONFIG.expenses.endpoint}/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
       setExpenses((prev) => prev.filter((expense) => expense.id !== id));
     } catch (error) {
       // For development, delete locally
@@ -284,7 +299,11 @@ const App: React.FC = () => {
     setErrors((prev) => ({ ...prev, news: null }));
 
     try {
-      const data = await apiCall(API_CONFIG.endpoints.news);
+      // FIX: Pass both baseUrl and endpoint
+      const data = await apiCall(
+        API_CONFIG.news.baseUrl,
+        API_CONFIG.news.endpoint
+      );
       setNewsData((data.articles || []) as NewsArticle[]);
     } catch (error) {
       setErrors((prev) => ({ ...prev, news: "Failed to fetch news" }));
@@ -293,8 +312,7 @@ const App: React.FC = () => {
         {
           id: 1,
           title: "Latest Tech Developments in Cloud Computing",
-          summary:
-            "Major cloud providers announce new serverless capabilities...",
+          summary: "Major cloud providers announce new serverless capabilities...",
           source: "TechNews",
           publishedAt: "2024-03-15T12:00:00Z",
           url: "https://example.com/news1",
@@ -302,8 +320,7 @@ const App: React.FC = () => {
         {
           id: 2,
           title: "JavaScript Frameworks: What's New in 2024",
-          summary:
-            "React, Vue, and Angular continue to evolve with new features...",
+          summary: "React, Vue, and Angular continue to evolve with new features...",
           source: "DevToday",
           publishedAt: "2024-03-15T10:30:00Z",
           url: "https://example.com/news2",
