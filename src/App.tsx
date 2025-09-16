@@ -147,7 +147,7 @@ const App: React.FC = () => {
       // Mock data for development
       setWeatherData({
         location: "Kathmandu",
-        temperature: 72,
+        temperature_c: 72,
         country: "Nepal",
         condition: "Partly Cloudy"
       });
@@ -431,7 +431,7 @@ const App: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-3xl font-bold text-white">
-                      {weatherData.temperature}°C
+                      {weatherData.temperature_c}°C
                     </p>
                     <p className="text-gray-300">{weatherData.location}, {weatherData.country}</p>
                   </div>
