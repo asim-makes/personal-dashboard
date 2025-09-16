@@ -79,13 +79,23 @@ type NewExpense = {
 const App: React.FC = () => {
   // API Configuration - Update these with your API Gateway endpoints
   const API_CONFIG = {
-    baseUrl: process.env.REACT_APP_GATEWAY_URL || "http://localhost:3001", // Replace with your actual API Gateway URL
-    endpoints: {
-      weather: "/WeatherApp",
-      github: "/github-activity",
-      expenses: "/expenses",
-      news: "/news",
+    weather: {
+      baseUrl: process.env.REACT_APP_WEATHER_GATEWAY_URL || "http://localhost:3001", // Example: A dedicated URL for the weather service
+      endpoint: "/WeatherApp",
     },
+    github: {
+      baseUrl: process.env.REACT_APP_GITHUB_GATEWAY_URL || "http://localhost:3002", // Example: A dedicated URL for the GitHub service
+      endpoint: "/GitHubApp",
+    },
+    expenses: {
+      baseUrl: process.env.REACT_APP_EXPENSES_GATEWAY_URL || "http://localhost:3003", // Example: A dedicated URL for the expenses service
+      endpoint: "/expenses",
+    },
+    news: {
+      baseUrl: process.env.REACT_APP_NEWS_GATEWAY_URL || "http://localhost:3004", // Example: A dedicated URL for the news service
+      endpoint: "/news",
+    },
+  };
   };
 
   // State management
@@ -108,10 +118,9 @@ const App: React.FC = () => {
     category: "other",
   });
 
-  // Generic API call function
-  const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+  const apiCall = async (baseUrl: string, endpoint: string, options: RequestInit = {}) => {
     try {
-      const response = await fetch(`${API_CONFIG.baseUrl}${endpoint}`, {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
@@ -126,23 +135,51 @@ const App: React.FC = () => {
 
       return await response.json();
     } catch (error) {
-      console.error(`API Error for ${endpoint}:`, error);
+      console.error(`API Error for ${baseUrl}${endpoint}:`, error);
       throw error;
     }
   };
 
-  // Weather Widget Functions
+  const fetchGithubActivity = async () => {
+    setLoading((prev) => ({ ...prev, github: true }));
+    setErrors((prev) => ({ ...prev, github: null }));
+
+    try {
+      // Pass both baseUrl and endpoint to the updated apiCall
+      const data = await apiCall(
+        API_CONFIG.github.baseUrl,
+        API_CONFIG.github.endpoint
+      );
+      setGithubActivity((data.recent_activity || []) as GithubActivity[]);
+    } catch (error) {
+      setErrors((prev) => ({
+        ...prev,
+        github: "Failed to fetch GitHub activity",
+      }));
+      // Mock data for development
+      // ... (your existing mock data)
+    } finally {
+      setLoading((prev) => ({ ...prev, github: false }));
+    }
+  };
+
+
+  // Corrected fetchWeatherData function
   const fetchWeatherData = async () => {
     setLoading((prev) => ({ ...prev, weather: true }));
     setErrors((prev) => ({ ...prev, weather: null }));
 
     try {
       const location = "Kathmandu";
-
-      const data = await apiCall(API_CONFIG.endpoints.weather, {
-        method: "POST",
-        body: JSON.stringify({ location: location }),
-      });
+      // Pass both baseUrl and endpoint to the updated apiCall
+      const data = await apiCall(
+        API_CONFIG.weather.baseUrl,
+        API_CONFIG.weather.endpoint,
+        {
+          method: "POST",
+          body: JSON.stringify({ location: location }),
+        }
+      );
       setWeatherData(data as WeatherData);
     } catch (error) {
       setErrors((prev) => ({
@@ -158,49 +195,6 @@ const App: React.FC = () => {
       });
     } finally {
       setLoading((prev) => ({ ...prev, weather: false }));
-    }
-  };
-
-  // GitHub Activity Functions
-  const fetchGithubActivity = async () => {
-    setLoading((prev) => ({ ...prev, github: true }));
-    setErrors((prev) => ({ ...prev, github: null }));
-
-    try {
-      const data = await apiCall(API_CONFIG.endpoints.github);
-      setGithubActivity((data.activities || []) as GithubActivity[]);
-    } catch (error) {
-      setErrors((prev) => ({
-        ...prev,
-        github: "Failed to fetch GitHub activity",
-      }));
-      // Mock data for development
-      setGithubActivity([
-        {
-          id: 1,
-          type: "push",
-          repo: "user/awesome-project",
-          message: "Added new authentication system",
-          timestamp: "2024-03-15T10:30:00Z",
-          commits: 3,
-        },
-        {
-          id: 2,
-          type: "star",
-          repo: "user/react-dashboard",
-          message: "Starred repository",
-          timestamp: "2024-03-14T15:45:00Z",
-        },
-        {
-          id: 3,
-          type: "fork",
-          repo: "opensource/ml-toolkit",
-          message: "Forked repository",
-          timestamp: "2024-03-14T09:20:00Z",
-        },
-      ]);
-    } finally {
-      setLoading((prev) => ({ ...prev, github: false }));
     }
   };
 
