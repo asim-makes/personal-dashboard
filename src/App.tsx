@@ -22,11 +22,12 @@ import {
 // Type definitions
 type WeatherData = {
   location: string;
-  temperature: number;
+  temperature_c: number;
+  country: string;
   condition: string;
-  humidity: number;
-  windSpeed: number;
-  uvIndex: number;
+//   humidity: number;
+//   windSpeed: number;
+//   uvIndex: number;
 };
 
 type GithubActivity = {
@@ -78,9 +79,9 @@ type NewExpense = {
 const App: React.FC = () => {
   // API Configuration - Update these with your API Gateway endpoints
   const API_CONFIG = {
-    baseUrl: "https://your-api-gateway-url.amazonaws.com", // Replace with your actual API Gateway URL
+    baseUrl: process.env.REACT_APP_GATEWAY_URL || "http://localhost:3001", // Replace with your actual API Gateway URL
     endpoints: {
-      weather: "/weather",
+      weather: "/WeatherApp",
       github: "/github-activity",
       expenses: "/expenses",
       news: "/news",
@@ -145,12 +146,10 @@ const App: React.FC = () => {
       }));
       // Mock data for development
       setWeatherData({
-        location: "San Francisco, CA",
+        location: "Kathmandu",
         temperature: 72,
-        condition: "Partly Cloudy",
-        humidity: 65,
-        windSpeed: 8,
-        uvIndex: 6,
+        country: "Nepal",
+        condition: "Partly Cloudy"
       });
     } finally {
       setLoading((prev) => ({ ...prev, weather: false }));
@@ -432,36 +431,36 @@ const App: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-3xl font-bold text-white">
-                      {weatherData.temperature}°F
+                      {weatherData.temperature}°C
                     </p>
-                    <p className="text-gray-300">{weatherData.location}</p>
+                    <p className="text-gray-300">{weatherData.location}, {weatherData.country}</p>
                   </div>
                   <div className="text-white">
                     {getWeatherIcon(weatherData.condition)}
                   </div>
                 </div>
                 <p className="text-gray-300">{weatherData.condition}</p>
-                <div className="grid grid-cols-3 gap-4 mt-4">
-                  <div className="text-center">
-                    <Wind className="w-4 h-4 mx-auto text-gray-400" />
-                    <p className="text-xs text-gray-400 mt-1">Wind</p>
-                    <p className="text-sm text-white">
-                      {weatherData.windSpeed} mph
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <Eye className="w-4 h-4 mx-auto text-gray-400" />
-                    <p className="text-xs text-gray-400 mt-1">Humidity</p>
-                    <p className="text-sm text-white">
-                      {weatherData.humidity}%
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <Sun className="w-4 h-4 mx-auto text-gray-400" />
-                    <p className="text-xs text-gray-400 mt-1">UV Index</p>
-                    <p className="text-sm text-white">{weatherData.uvIndex}</p>
-                  </div>
-                </div>
+//                 <div className="grid grid-cols-3 gap-4 mt-4">
+//                   <div className="text-center">
+//                     <Wind className="w-4 h-4 mx-auto text-gray-400" />
+//                     <p className="text-xs text-gray-400 mt-1">Wind</p>
+//                     <p className="text-sm text-white">
+//                       {weatherData.windSpeed} mph
+//                     </p>
+//                   </div>
+//                   <div className="text-center">
+//                     <Eye className="w-4 h-4 mx-auto text-gray-400" />
+//                     <p className="text-xs text-gray-400 mt-1">Humidity</p>
+//                     <p className="text-sm text-white">
+//                       {weatherData.humidity}%
+//                     </p>
+//                   </div>
+//                   <div className="text-center">
+//                     <Sun className="w-4 h-4 mx-auto text-gray-400" />
+//                     <p className="text-xs text-gray-400 mt-1">UV Index</p>
+//                     <p className="text-sm text-white">{weatherData.uvIndex}</p>
+//                   </div>
+//                 </div>
               </div>
             ) : (
               <div className="animate-pulse space-y-4">
