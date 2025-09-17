@@ -96,7 +96,6 @@ const App: React.FC = () => {
       endpoint: "/news",
     },
   };
-  };
 
   // State management
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
