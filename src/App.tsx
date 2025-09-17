@@ -78,23 +78,30 @@ type NewExpense = {
 
 const App: React.FC = () => {
   // API Configuration - Update these with your API Gateway endpoints
+  // const API_CONFIG = {
+  //   weather: {
+  //     baseUrl: process.env.REACT_APP_WEATHER_GATEWAY_URL || "http://localhost:3001", // Example: A dedicated URL for the weather service
+  //     endpoint: "/WeatherApp",
+  //   },
+  //   github: {
+  //     baseUrl: process.env.REACT_APP_GITHUB_GATEWAY_URL || "http://localhost:3002", // Example: A dedicated URL for the GitHub service
+  //     endpoint: "/GitHubApp",
+  //   },
+  //   expenses: {
+  //     baseUrl: process.env.REACT_APP_EXPENSES_GATEWAY_URL || "http://localhost:3003", // Example: A dedicated URL for the expenses service
+  //     endpoint: "/expenses",
+  //   },
+  //   news: {
+  //     baseUrl: process.env.REACT_APP_NEWS_GATEWAY_URL || "http://localhost:3004", // Example: A dedicated URL for the news service
+  //     endpoint: "/news",
+  //   },
+  // };
+
   const API_CONFIG = {
-    weather: {
-      baseUrl: process.env.REACT_APP_WEATHER_GATEWAY_URL || "http://localhost:3001", // Example: A dedicated URL for the weather service
-      endpoint: "/WeatherApp",
-    },
-    github: {
-      baseUrl: process.env.REACT_APP_GITHUB_GATEWAY_URL || "http://localhost:3002", // Example: A dedicated URL for the GitHub service
-      endpoint: "/GitHubApp",
-    },
-    expenses: {
-      baseUrl: process.env.REACT_APP_EXPENSES_GATEWAY_URL || "http://localhost:3003", // Example: A dedicated URL for the expenses service
-      endpoint: "/expenses",
-    },
-    news: {
-      baseUrl: process.env.REACT_APP_NEWS_GATEWAY_URL || "http://localhost:3004", // Example: A dedicated URL for the news service
-      endpoint: "/news",
-    },
+    weather: process.env.REACT_APP_WEATHER_API_URL,
+    github: process.env.REACT_APP_GITHUB_API_URL,
+    expenses: process.env.REACT_APP_EXPENSES_API_URL,
+    news: process.env.REACT_APP_NEWS_API_URL,
   };
 
   // State management
@@ -117,9 +124,31 @@ const App: React.FC = () => {
     category: "other",
   });
 
-  const apiCall = async (baseUrl: string, endpoint: string, options: RequestInit = {}) => {
+  // const apiCall = async (baseUrl: string, endpoint: string, options: RequestInit = {}) => {
+  //   try {
+  //     const response = await fetch(`${baseUrl}${endpoint}`, {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
+  //         ...(options.headers as object),
+  //       },
+  //       ...options,
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  //     }
+
+  //     return await response.json();
+  //   } catch (error) {
+  //     console.error(`API Error for ${baseUrl}${endpoint}:`, error);
+  //     throw error;
+  //   }
+  // };
+
+  const apiCall = async (url: string, options: RequestInit = {}) => {
     try {
-      const response = await fetch(`${baseUrl}${endpoint}`, {
+      const response = await fetch(url, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
@@ -127,65 +156,32 @@ const App: React.FC = () => {
         },
         ...options,
       });
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-
       return await response.json();
     } catch (error) {
-      console.error(`API Error for ${baseUrl}${endpoint}:`, error);
+      console.error(`API Error for ${url}:`, error);
       throw error;
     }
   };
 
-  const fetchGithubActivity = async () => {
-    setLoading((prev) => ({ ...prev, github: true }));
-    setErrors((prev) => ({ ...prev, github: null }));
-
-    try {
-      // Pass both baseUrl and endpoint to the updated apiCall
-      const data = await apiCall(
-        API_CONFIG.github.baseUrl,
-        API_CONFIG.github.endpoint
-      );
-      setGithubActivity((data.recent_activity || []) as GithubActivity[]);
-    } catch (error) {
-      setErrors((prev) => ({
-        ...prev,
-        github: "Failed to fetch GitHub activity",
-      }));
-      // Mock data for development
-      // ... (your existing mock data)
-    } finally {
-      setLoading((prev) => ({ ...prev, github: false }));
-    }
-  };
-
-
-  // Corrected fetchWeatherData function
   const fetchWeatherData = async () => {
     setLoading((prev) => ({ ...prev, weather: true }));
     setErrors((prev) => ({ ...prev, weather: null }));
 
     try {
       const location = "Kathmandu";
-      // Pass both baseUrl and endpoint to the updated apiCall
-      const data = await apiCall(
-        API_CONFIG.weather.baseUrl,
-        API_CONFIG.weather.endpoint,
-        {
-          method: "POST",
-          body: JSON.stringify({ location: location }),
-        }
-      );
+      const data = await apiCall(API_CONFIG.weather, {
+        method: "POST",
+        body: JSON.stringify({ location: location }),
+      });
       setWeatherData(data as WeatherData);
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
         weather: "Failed to fetch weather data",
       }));
-      // Mock data for development
       setWeatherData({
         location: "Kathmandu",
         temperature_c: 72,
@@ -197,21 +193,33 @@ const App: React.FC = () => {
     }
   };
 
+
+  const fetchGithubActivity = async () => {
+    setLoading((prev) => ({ ...prev, github: true }));
+    setErrors((prev) => ({ ...prev, github: null }));
+    try {
+      const data = await apiCall(API_CONFIG.github);
+      setGithubActivity((data.recent_activity || []) as GithubActivity[]);
+    } catch (error) {
+      setErrors((prev) => ({
+        ...prev,
+        github: "Failed to fetch GitHub activity",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, github: false }));
+    }
+  };
+
   // Expense Tracker Functions
   const fetchExpenses = async () => {
     setLoading((prev) => ({ ...prev, expenses: true }));
     setErrors((prev) => ({ ...prev, expenses: null }));
 
     try {
-      // FIX: Pass both baseUrl and endpoint
-      const data = await apiCall(
-        API_CONFIG.expenses.baseUrl,
-        API_CONFIG.expenses.endpoint
-      );
+      const data = await apiCall(API_CONFIG.expenses);
       setExpenses((data.expenses || []) as Expense[]);
     } catch (error) {
       setErrors((prev) => ({ ...prev, expenses: "Failed to fetch expenses" }));
-      // Mock data for development
       setExpenses([
         {
           id: 1,
@@ -250,20 +258,14 @@ const App: React.FC = () => {
         date: new Date().toISOString().split("T")[0],
       };
 
-      // FIX: Pass both baseUrl and endpoint
-      const data = await apiCall(
-        API_CONFIG.expenses.baseUrl,
-        API_CONFIG.expenses.endpoint,
-        {
-          method: "POST",
-          body: JSON.stringify(expense),
-        }
-      );
+      const data = await apiCall(API_CONFIG.expenses, {
+        method: "POST",
+        body: JSON.stringify(expense),
+      });
 
       setExpenses((prev) => [data as Expense, ...prev]);
       setNewExpense({ description: "", amount: "", category: "other" });
     } catch (error) {
-      // For development, add locally
       const expense: Expense = {
         id: Date.now(),
         ...newExpense,
@@ -277,17 +279,11 @@ const App: React.FC = () => {
 
   const deleteExpense = async (id: number) => {
     try {
-      // FIX: Pass both baseUrl and endpoint. The endpoint now includes the ID.
-      await apiCall(
-        API_CONFIG.expenses.baseUrl,
-        `${API_CONFIG.expenses.endpoint}/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      await apiCall(`${API_CONFIG.expenses}/${id}`, {
+        method: "DELETE",
+      });
       setExpenses((prev) => prev.filter((expense) => expense.id !== id));
     } catch (error) {
-      // For development, delete locally
       setExpenses((prev) => prev.filter((expense) => expense.id !== id));
     }
   };
@@ -298,15 +294,10 @@ const App: React.FC = () => {
     setErrors((prev) => ({ ...prev, news: null }));
 
     try {
-      // FIX: Pass both baseUrl and endpoint
-      const data = await apiCall(
-        API_CONFIG.news.baseUrl,
-        API_CONFIG.news.endpoint
-      );
+      const data = await apiCall(API_CONFIG.news);
       setNewsData((data.articles || []) as NewsArticle[]);
     } catch (error) {
       setErrors((prev) => ({ ...prev, news: "Failed to fetch news" }));
-      // Mock data for development
       setNewsData([
         {
           id: 1,
