@@ -98,10 +98,10 @@ const App: React.FC = () => {
   // };
 
   const API_CONFIG = {
-    weather: process.env.REACT_APP_WEATHER_API_URL,
-    github: process.env.REACT_APP_GITHUB_API_URL,
-    expenses: process.env.REACT_APP_EXPENSES_API_URL,
-    news: process.env.REACT_APP_NEWS_API_URL,
+    weather: process.env.REACT_APP_WEATHER_GATEWAY_URL || "http://localhost:3001/weather",
+    github: process.env.REACT_APP_GITHUB_GATEWAY_URL || "http://localhost:3002/github",
+    expenses: process.env.REACT_APP_EXPENSES_GATEWAY_URL || "http://localhost:3003/expenses",
+    news: process.env.REACT_APP_NEWS_GATEWAY_URL || "http://localhost:3004/news",
   };
 
   // State management
