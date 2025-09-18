@@ -230,31 +230,34 @@ const App: React.FC = () => {
 
   // Add Expense
   const addExpense = async () => {
-    if (!newExpense.description || !newExpense.amount) return;
+    // 1. Basic validation: check if fields are empty
+    if (!newExpense.description || !newExpense.amount) {
+        alert("Description and Amount are required.");
+        return; // Stop execution if validation fails
+    }
+
+    // 2. Type validation: ensure amount is a valid number
+    const amount = parseFloat(newExpense.amount);
+    if (isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid positive amount.");
+        return; // Stop execution if validation fails
+    }
 
     try {
-      const expense: Omit<Expense, "id"> = {
-        ...newExpense,
-        amount: Math.round(parseFloat(newExpense.amount) * 100), // Converting to cents
-        date: new Date().toISOString().split("T")[0],
-      };
+        const expense: Omit<Expense, "id"> = {
+            ...newExpense,
+            amount: Math.round(amount * 100), // Use the validated 'amount' variable
+            date: new Date().toISOString().split("T")[0],
+        };
 
-      const data = await apiCall(API_CONFIG.expenses, {
-        method: "POST",
-        body: JSON.stringify(expense),
-      });
+        const data = await apiCall(API_CONFIG.expenses, {
+            method: "POST",
+            body: JSON.stringify(expense),
+        });
 
-      setExpenses((prev) => [data as Expense, ...prev]);
-      setNewExpense({ description: "", amount: "", category: "other" });
+        // ... (rest of your success logic)
     } catch (error) {
-      const expense: Expense = {
-        id: Date.now(),
-        ...newExpense,
-        amount: Math.round(parseFloat(newExpense.amount) * 100), // Converting to cents
-        date: new Date().toISOString().split("T")[0],
-      };
-      setExpenses((prev) => [expense, ...prev]);
-      setNewExpense({ description: "", amount: "", category: "other" });
+        // ... (rest of your error handling)
     }
   };
 
