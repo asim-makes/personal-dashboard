@@ -199,6 +199,7 @@ const App: React.FC = () => {
       const data = await apiCall(API_CONFIG.expenses);
       setExpenses((data.expenses || []) as Expense[]);
     } catch (error) {
+      console.error("Failed to fetch expenses:", error);
       setErrors((prev) => ({ ...prev, expenses: "Failed to fetch expenses" }));
       setExpenses([
         {
@@ -232,32 +233,44 @@ const App: React.FC = () => {
   const addExpense = async () => {
     // 1. Basic validation: check if fields are empty
     if (!newExpense.description || !newExpense.amount) {
-        alert("Description and Amount are required.");
-        return; // Stop execution if validation fails
+      alert("Description and Amount are required.");
+      return; // Stop execution if validation fails
     }
 
     // 2. Type validation: ensure amount is a valid number
     const amount = parseFloat(newExpense.amount);
     if (isNaN(amount) || amount <= 0) {
-        alert("Please enter a valid positive amount.");
-        return; // Stop execution if validation fails
+      alert("Please enter a valid positive amount.");
+      return; // Stop execution if validation fails
     }
 
     try {
         const expense: Omit<Expense, "id"> = {
-            ...newExpense,
-            amount: Math.round(amount * 100), // Use the validated 'amount' variable
-            date: new Date().toISOString().split("T")[0],
+          ...newExpense,
+          amount: Math.round(amount * 100), // Use the validated 'amount' variable
+          date: new Date().toISOString().split("T")[0],
         };
 
         const data = await apiCall(API_CONFIG.expenses, {
-            method: "POST",
-            body: JSON.stringify(expense),
+          method: "POST",
+          body: JSON.stringify(expense),
         });
 
         // ... (rest of your success logic)
     } catch (error) {
-        // ... (rest of your error handling)
+        // 💡 Acknowledge the error and display it to the user.
+      console.error("Failed to add expense:", error);
+      setErrors((prev) => ({ ...prev, expenses: "Failed to add expense. Check the console for details." }));
+      // Consider adding the expense to the state as a temporary fallback, but
+      // be aware it won't be saved to the database.
+      const fallbackExpense: Expense = {
+        id: Date.now(),
+        ...newExpense,
+        amount: Math.round(parseFloat(newExpense.amount) * 100),
+        date: new Date().toISOString().split("T")[0],
+      };
+      setExpenses((prev) => [fallbackExpense, ...prev]);
+      setNewExpense({ description: "", amount: "", category: "other" });
     }
   };
 
