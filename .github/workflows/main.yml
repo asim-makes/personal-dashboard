@@ -28,6 +28,7 @@ jobs:
           REACT_APP_GITHUB_GATEWAY_URL: ${{ secrets.REACT_APP_GITHUB_GATEWAY_URL }}
           REACT_APP_WEATHER_GATEWAY_URL: ${{ secrets.REACT_APP_WEATHER_GATEWAY_URL }}
           REACT_APP_NEWS_GATEWAY_URL: ${{ secrets.REACT_APP_NEWS_GATEWAY_URL }}
+          REACT_APP_EXPENSES_GATEWAY_URL: ${{ secrets.REACT_APP_EXPENSES_GATEWAY_URL }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

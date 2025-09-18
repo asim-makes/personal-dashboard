@@ -108,6 +108,7 @@ const App: React.FC = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [githubActivity, setGithubActivity] = useState<GithubActivity[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [newsData, setNewsData] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState<LoadingState>({
     weather: false,
@@ -123,28 +124,6 @@ const App: React.FC = () => {
     amount: "",
     category: "other",
   });
-
-  // const apiCall = async (baseUrl: string, endpoint: string, options: RequestInit = {}) => {
-  //   try {
-  //     const response = await fetch(`${baseUrl}${endpoint}`, {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
-  //         ...(options.headers as object),
-  //       },
-  //       ...options,
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  //     }
-
-  //     return await response.json();
-  //   } catch (error) {
-  //     console.error(`API Error for ${baseUrl}${endpoint}:`, error);
-  //     throw error;
-  //   }
-  // };
 
   const apiCall = async (url: string, options: RequestInit = {}) => {
     try {
@@ -166,6 +145,7 @@ const App: React.FC = () => {
     }
   };
 
+  // Weather Functions
   const fetchWeatherData = async () => {
     setLoading((prev) => ({ ...prev, weather: true }));
     setErrors((prev) => ({ ...prev, weather: null }));
@@ -193,7 +173,7 @@ const App: React.FC = () => {
     }
   };
 
-
+  // GitHub Activity Functions
   const fetchGithubActivity = async () => {
     setLoading((prev) => ({ ...prev, github: true }));
     setErrors((prev) => ({ ...prev, github: null }));
@@ -248,13 +228,14 @@ const App: React.FC = () => {
     }
   };
 
+  // Add Expense
   const addExpense = async () => {
     if (!newExpense.description || !newExpense.amount) return;
 
     try {
       const expense: Omit<Expense, "id"> = {
         ...newExpense,
-        amount: parseFloat(newExpense.amount),
+        amount: Math.round(parseFloat(newExpense.amount) * 100), // Converting to cents
         date: new Date().toISOString().split("T")[0],
       };
 
@@ -269,7 +250,7 @@ const App: React.FC = () => {
       const expense: Expense = {
         id: Date.now(),
         ...newExpense,
-        amount: parseFloat(newExpense.amount),
+        amount: Math.round(parseFloat(newExpense.amount) * 100), // Converting to cents
         date: new Date().toISOString().split("T")[0],
       };
       setExpenses((prev) => [expense, ...prev]);
@@ -277,6 +258,7 @@ const App: React.FC = () => {
     }
   };
 
+  // Delete Expense
   const deleteExpense = async (id: number) => {
     try {
       await apiCall(`${API_CONFIG.expenses}/${id}`, {
@@ -587,6 +569,23 @@ const App: React.FC = () => {
               </div>
             </div>
 
+            {/* Category Filter */}
+            <div className="mb-4">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm"
+              >
+                <option value="all">All Categories</option>
+                <option value="food">Food</option>
+                <option value="transport">Transport</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="utilities">Utilities</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+
             {/* Expenses List */}
             {errors.expenses ? (
               <div className="flex items-center text-red-300 text-sm">
@@ -598,44 +597,54 @@ const App: React.FC = () => {
                 <div className="text-right text-sm text-gray-300 mb-2">
                   Total:{" "}
                   {formatCurrency(
-                    expenses.reduce((sum, expense) => sum + expense.amount, 0)
+                    expenses
+                      .filter((expense) =>
+                        selectedCategory === "all"
+                          ? true
+                          : expense.category === selectedCategory
+                      )
+                      .reduce((sum, expense) => sum + expense.amount, 0)
                   )}
                 </div>
-                {expenses.map((expense) => (
-                  <div
-                    key={expense.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-white">
-                        {expense.description}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(
-                            expense.category
-                          )}`}
+
+                {expenses
+                  .filter((expense) =>
+                    selectedCategory === "all" ? true : expense.category === selectedCategory
+                  )
+                  .map((expense) => (
+                    <div
+                      key={expense.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">{expense.description}</p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(
+                              expense.category
+                            )}`}
+                          >
+                            {expense.category}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {formatDate(expense.date)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-semibold text-white">
+                          {formatCurrency(expense.amount)}
+                        </span>
+                        <button
+                          onClick={() => deleteExpense(expense.id)}
+                          className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
                         >
-                          {expense.category}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {formatDate(expense.date)}
-                        </span>
+                          <Trash2 className="w-3 h-3" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-semibold text-white">
-                        {formatCurrency(expense.amount)}
-                      </span>
-                      <button
-                        onClick={() => deleteExpense(expense.id)}
-                        className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </div>
