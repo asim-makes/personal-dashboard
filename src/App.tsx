@@ -204,21 +204,21 @@ const App: React.FC = () => {
       setErrors((prev) => ({ ...prev, expenses: "Failed to fetch expenses" }));
       setExpenses([
         {
-          id: 1,
+          expenseId: 1,
           description: "Groceries",
           amount: 85.5,
           category: "food",
           date: "2024-03-15",
         },
         {
-          id: 2,
+          expenseId: 2,
           description: "Gas",
           amount: 45.0,
           category: "transport",
           date: "2024-03-14",
         },
         {
-          id: 3,
+          expenseId: 3,
           description: "Netflix",
           amount: 15.99,
           category: "entertainment",
@@ -281,9 +281,9 @@ const App: React.FC = () => {
       await apiCall(`${API_CONFIG.expenses}/${id}`, {
         method: "DELETE",
       });
-      setExpenses((prev) => prev.filter((expense) => expense.id !== id));
+      setExpenses((prev) => prev.filter((expense) => expense.id !== expenseId));
     } catch (error) {
-      setExpenses((prev) => prev.filter((expense) => expense.id !== id));
+      setExpenses((prev) => prev.filter((expense) => expense.id !== expenseId));
     }
   };
 
