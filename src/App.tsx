@@ -40,7 +40,7 @@ type GithubActivity = {
 };
 
 type Expense = {
-  id: number;
+  expenseId: number;
   description: string;
   amount: number;
   category: string;
