@@ -246,7 +246,7 @@ const App: React.FC = () => {
     }
 
     try {
-        const expense: Omit<Expense, "id"> = {
+        const expense: Omit<Expense, "expenseId"> = {
           ...newExpense,
           amount: Math.round(amount * 100), // Use the validated 'amount' variable
           date: new Date().toISOString().split("T")[0],
@@ -265,7 +265,7 @@ const App: React.FC = () => {
       // Consider adding the expense to the state as a temporary fallback, but
       // be aware it won't be saved to the database.
       const fallbackExpense: Expense = {
-        id: Date.now(),
+        expenseId: Date.now(),
         ...newExpense,
         amount: Math.round(parseFloat(newExpense.amount) * 100),
         date: new Date().toISOString().split("T")[0],
