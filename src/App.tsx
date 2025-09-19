@@ -197,6 +197,7 @@ const App: React.FC = () => {
 
     try {
       const data = await apiCall(API_CONFIG.expenses);
+      console.log("API Response Data:", data);
       setExpenses((data.expenses || []) as Expense[]);
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
