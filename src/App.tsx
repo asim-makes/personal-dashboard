@@ -281,9 +281,9 @@ const App: React.FC = () => {
       await apiCall(`${API_CONFIG.expenses}/${id}`, {
         method: "DELETE",
       });
-      setExpenses((prev) => prev.filter((expense) => expense.id !== expenseId));
+      setExpenses((prev) => prev.filter((expense) => expense.expenseId !== id));
     } catch (error) {
-      setExpenses((prev) => prev.filter((expense) => expense.id !== expenseId));
+      setExpenses((prev) => prev.filter((expense) => expense.expenseId !== id));
     }
   };
 
