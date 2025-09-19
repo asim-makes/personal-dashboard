@@ -23,9 +23,11 @@ jobs:
 
       - name: Instal dependencies
         run: npm install
+        working-directory: ./frontend
 
       - name: Run the build
         run: npm run build
+        working-directory: ./frontend
         env:
           REACT_APP_GITHUB_GATEWAY_URL: ${{ secrets.REACT_APP_GITHUB_GATEWAY_URL }}
           REACT_APP_WEATHER_GATEWAY_URL: ${{ secrets.REACT_APP_WEATHER_GATEWAY_URL }}
@@ -40,4 +42,4 @@ jobs:
           aws-region: 'us-east-1'
 
       - name: Deploy to S3
-        run: aws s3 sync ./build "s3://${{ secrets.AWS_S3_BUCKET }}" --delete
+        run: aws s3 sync ./frontend/build "s3://${{ secrets.AWS_S3_BUCKET }}" --delete
