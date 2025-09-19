@@ -619,7 +619,7 @@ const App: React.FC = () => {
                           ? true
                           : expense.category === selectedCategory
                       )
-                      .reduce((sum, expense) => sum + expense.amount, 0)
+                      .reduce((sum, expense) => sum + expense.amount / 100, 0)
                   )}
                 </div>
 
