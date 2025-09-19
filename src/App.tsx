@@ -331,9 +331,9 @@ const App: React.FC = () => {
 
   // Helper functions
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-US", {
+    new Intl.NumberFormat("ne-NP", {
       style: "currency",
-      currency: "USD",
+      currency: "NPR",
     }).format(amount);
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString();
@@ -651,7 +651,7 @@ const App: React.FC = () => {
 
                       <div className="flex items-center space-x-2">
                         <span className="text-sm font-semibold text-white">
-                          {formatCurrency(expense.amount)}
+                          {formatCurrency(expense.amount / 100)}
                         </span>
                         <button
                           onClick={() => deleteExpense(expense.expenseId)}
