@@ -654,7 +654,7 @@ const App: React.FC = () => {
                           {formatCurrency(expense.amount)}
                         </span>
                         <button
-                          onClick={() => deleteExpense(expense.id)}
+                          onClick={() => deleteExpense(expense.expenseId)}
                           className="p-1 rounded text-red-400 hover:bg-red-500/20 transition-colors"
                         >
                           <Trash2 className="w-3 h-3" />
