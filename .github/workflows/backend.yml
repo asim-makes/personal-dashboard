@@ -1,0 +1,75 @@
+name: Deploy Backend
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - 'backend:/**'
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                aws-region: 'us-east-1'
+            
+            - name: Deploy changed Lambda functions
+              run: |
+                # Get the list of backend directories
+                CHANGED_BACKEND_DIRS=$(git diff --name-only HEAD^ HEAD | \
+                    grep "backend/" | \
+                    sed 's|backend/||' | \
+                    xargs -n 1 dirname | \
+                    sort | \
+                    uniq)
+                
+                if [ -z "$CHANGED_BACKEND_DIRS" ]; then
+                    echo "No backend changes detected. Skipping deployment."
+                    exit 0
+                fi
+
+                # Check and install dependencies once for all apps if a requirements.txt exists
+                if [ -f "backend/requirements.txt" ]; then
+                    echo "Installing backend dependencies..."
+                    mkdir -p backend/deps
+                    pip install -r backend/requirements.txt -t backend/deps
+                fi
+
+                for APP_NAME in $CHANGED_BACKEND_DIRS; do
+                    echo "Packaging and deploying $APP_NAME..."
+                    
+                    # Create a temporary directory for packaging
+                    mkdir -p temp-package
+                    
+                    # Copy the Lambda function code
+                    cp "backend/$APP_NAME/lambda_function.py" "temp-package/lambda_function.py"
+                    
+                    # If dependencies were installed, copy them as well
+                    if [ -d "backend/deps" ]; then
+                        cp -r backend/deps/* temp-package/
+                    fi
+                    
+                    # Navigate to the temporary package directory to create the zip
+                    cd temp-package
+                    zip -r ../"$APP_NAME.zip" .
+                    
+                    # Navigate back to the repository root
+                    cd ..
+                    rm -rf temp-package
+
+                    # Deploy the code to the existing Lambda function
+                    aws lambda update-function-code \
+                        --function-name "$APP_NAME" \
+                        --zip-file "fileb://$APP_NAME.zip" \
+                        --region "us-east-1"
+                    
+                    echo "Successfully deployed $APP_NAME."
+                done
