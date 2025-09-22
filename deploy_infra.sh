@@ -233,7 +233,7 @@ for APP_NAME in "${APPS[@]}"; do
         elif [[ "$APP_NAME" == "WeatherApp" ]]; then
           ENV_VARS="--environment Variables={WEATHER_API_KEY=${WEATHER_API_KEY}}"
         elif [[ "$APP_NAME" == "GitHubApp" ]]; then
-          ENV_VARS="--environment Variables={GITHUB_PAT=${GITHUB_PAT}}"
+          ENV_VARS="--environment Variables={GITHUB_PAT=${GITHUB_PAT},GITHUB_USERNAME=${GITHUB_USERNAME}}"
         fi
 
         aws --no-cli-pager lambda create-function \
