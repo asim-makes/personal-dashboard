@@ -1,3 +1,5 @@
 tailwind.config.js
 .venv/
 .python-version
+secrets
+infra.sh
