@@ -8,7 +8,7 @@ def get_github_activity(username, headers):
     """
     try:
         response = requests.get(f"https://api.github.com/users/{username}/events/public", headers=headers)
-        response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
+        response.raise_for_status()
         events = response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error fetching GitHub events: {e}")
@@ -23,7 +23,7 @@ def get_github_activity(username, headers):
             "timestamp": event.get("created_at"),
             "message": "No message available"
         }
-        
+
         if event["type"] == "PushEvent":
             activity["message"] = f"Pushed to {event['payload']['ref'].replace('refs/heads/', '')}"
             activity["commits"] = len(event["payload"]["commits"])
