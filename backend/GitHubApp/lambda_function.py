@@ -23,8 +23,7 @@ def get_github_activity(username, headers):
             "timestamp": event.get("created_at"),
             "message": "No message available"
         }
-
-        # Customize the message and commits based on the event type
+        
         if event["type"] == "PushEvent":
             activity["message"] = f"Pushed to {event['payload']['ref'].replace('refs/heads/', '')}"
             activity["commits"] = len(event["payload"]["commits"])
@@ -36,8 +35,6 @@ def get_github_activity(username, headers):
             activity["message"] = f"Created a new {event['payload']['ref_type']}"
         elif event["type"] == "ForkEvent":
             activity["message"] = f"Forked {event['repo']['name']}"
-        
-        # Add more event types as needed
 
         activity_list.append(activity)
 
