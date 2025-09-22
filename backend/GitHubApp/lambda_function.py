@@ -88,9 +88,9 @@ def get_repos_data(username, headers):
         print(f"Error fetching GitHub repositories: {e}")
         return []
 
-def lambda_handler(event, context):
+def handler(event, context):
     github_pat = os.environ.get('GITHUB_PAT')
-    github_username = "asim-makes"
+    github_username = os.environ.get('GITHUB_USERNAME')
 
     # Handle CORS preflight (OPTIONS)
     if event.get("httpMethod") == "OPTIONS":
