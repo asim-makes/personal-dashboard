@@ -13,6 +13,8 @@ jobs:
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
+              with:
+                fetch-depth: 0  # <--- This is the key fix
 
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v4
@@ -26,7 +28,7 @@ jobs:
                 # Get the list of backend directories
                 CHANGED_BACKEND_DIRS=$(git diff --name-only HEAD^ HEAD | \
                     grep "backend/" | \
-                    sed 's|backend/||' | \
+                    sed -e 's|backend/||' | \
                     xargs -n 1 dirname | \
                     sort | \
                     uniq)
