@@ -14,7 +14,7 @@ jobs:
             - name: Checkout Repository
               uses: actions/checkout@v4
               with:
-                fetch-depth: 0  # <--- This is the key fix
+                fetch-depth: 0
 
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v4
@@ -25,8 +25,17 @@ jobs:
             
             - name: Deploy changed Lambda functions
               run: |
-                # Get the list of backend directories
-                CHANGED_BACKEND_DIRS=$(git diff --name-only HEAD^ HEAD | \
+                # Check for a previous commit to handle manual re-runs and initial pushes
+                if git rev-parse HEAD^ &>/dev/null; then
+                  # Compare with the previous commit for a standard push
+                  CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+                else
+                  # List all files for the initial commit or manual rerun
+                  CHANGED_FILES=$(git ls-tree --name-only -r HEAD)
+                fi
+
+                # Get the list of directories that contain changed files
+                CHANGED_BACKEND_DIRS=$(echo "$CHANGED_FILES" | \
                     grep "backend/" | \
                     sed -e 's|backend/||' | \
                     xargs -n 1 dirname | \
@@ -46,32 +55,37 @@ jobs:
                 fi
 
                 for APP_NAME in $CHANGED_BACKEND_DIRS; do
-                    echo "Packaging and deploying $APP_NAME..."
-                    
-                    # Create a temporary directory for packaging
-                    mkdir -p temp-package
-                    
-                    # Copy the Lambda function code
-                    cp "backend/$APP_NAME/lambda_function.py" "temp-package/lambda_function.py"
-                    
-                    # If dependencies were installed, copy them as well
-                    if [ -d "backend/deps" ]; then
-                        cp -r backend/deps/* temp-package/
-                    fi
-                    
-                    # Navigate to the temporary package directory to create the zip
-                    cd temp-package
-                    zip -r ../"$APP_NAME.zip" .
-                    
-                    # Navigate back to the repository root
-                    cd ..
-                    rm -rf temp-package
+                    # Check if the directory is a valid Lambda function directory
+                    if [ -f "backend/$APP_NAME/lambda_function.py" ]; then
+                        echo "Packaging and deploying $APP_NAME..."
+                        
+                        # Create a temporary directory for packaging
+                        mkdir -p temp-package
+                        
+                        # Copy the Lambda function code
+                        cp "backend/$APP_NAME/lambda_function.py" "temp-package/lambda_function.py"
+                        
+                        # If dependencies were installed, copy them as well
+                        if [ -d "backend/deps" ]; then
+                            cp -r backend/deps/* temp-package/
+                        fi
+                        
+                        # Navigate to the temporary package directory to create the zip
+                        cd temp-package
+                        zip -r ../"$APP_NAME.zip" .
+                        
+                        # Navigate back to the repository root
+                        cd ..
+                        rm -rf temp-package
 
-                    # Deploy the code to the existing Lambda function
-                    aws lambda update-function-code \
-                        --function-name "$APP_NAME" \
-                        --zip-file "fileb://$APP_NAME.zip" \
-                        --region "us-east-1"
-                    
-                    echo "Successfully deployed $APP_NAME."
+                        # Deploy the code to the existing Lambda function
+                        aws lambda update-function-code \
+                            --function-name "$APP_NAME" \
+                            --zip-file "fileb://$APP_NAME.zip" \
+                            --region "us-east-1"
+                        
+                        echo "Successfully deployed $APP_NAME."
+                    else
+                        echo "Warning: $APP_NAME is not a valid Lambda function directory. Skipping."
+                    fi
                 done
