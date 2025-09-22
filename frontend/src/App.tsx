@@ -77,26 +77,6 @@ type NewExpense = {
 };
 
 const App: React.FC = () => {
-  // API Configuration - Update these with your API Gateway endpoints
-  // const API_CONFIG = {
-  //   weather: {
-  //     baseUrl: process.env.REACT_APP_WEATHER_GATEWAY_URL || "http://localhost:3001", // Example: A dedicated URL for the weather service
-  //     endpoint: "/WeatherApp",
-  //   },
-  //   github: {
-  //     baseUrl: process.env.REACT_APP_GITHUB_GATEWAY_URL || "http://localhost:3002", // Example: A dedicated URL for the GitHub service
-  //     endpoint: "/GitHubApp",
-  //   },
-  //   expenses: {
-  //     baseUrl: process.env.REACT_APP_EXPENSES_GATEWAY_URL || "http://localhost:3003", // Example: A dedicated URL for the expenses service
-  //     endpoint: "/expenses",
-  //   },
-  //   news: {
-  //     baseUrl: process.env.REACT_APP_NEWS_GATEWAY_URL || "http://localhost:3004", // Example: A dedicated URL for the news service
-  //     endpoint: "/news",
-  //   },
-  // };
-
   const API_CONFIG = {
     weather: process.env.REACT_APP_WEATHER_GATEWAY_URL || "http://localhost:3001/weather",
     github: process.env.REACT_APP_GITHUB_GATEWAY_URL || "http://localhost:3002/github",
