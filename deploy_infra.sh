@@ -162,8 +162,7 @@ create_or_update_role "$EXPENSE_APP_ROLE_NAME" "$DYNAMODB_FULL_ACCESS_POLICY"
 echo "Waiting for IAM roles to become available..."
 sleep 5
 
-# declare -a APPS=("ExpenseApp", "GitHubApp", "NewsApp", "WeatherApp")
-declare -a APPS=("GitHubApp")
+declare -a APPS=("ExpenseApp", "GitHubApp", "NewsApp", "WeatherApp")
 
 for APP_NAME in "${APPS[@]}"; do
     echo "Processing $APP_NAME..."
