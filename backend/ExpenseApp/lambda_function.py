@@ -7,7 +7,7 @@ from decimal import Decimal
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('expenses-table')
 
-def lambda_handler(event, context):
+def handler(event, context):
     http_method = event['httpMethod']
 
     if http_method == 'POST':

@@ -2,7 +2,7 @@ import json
 import os
 import requests
 
-def lambda_handler(event, context):
+def handler(event, context):
     """
     Lambda function to call the weatherapi.com API.
     """

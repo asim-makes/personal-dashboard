@@ -5,7 +5,7 @@ import requests
 # This function is the entry point for your AWS Lambda function.
 # It fetches the latest news from the News API and formats the
 # data to be consumed by your frontend application.
-def lambda_handler(event, context):
+def handler(event, context):
     """
     Handles the Lambda invocation to fetch and format news articles.
 
